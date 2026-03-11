@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-white">Sentiment Result</h2>
+    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">Back to History</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center p-5">
+                <h6 class="text-muted mb-4">Detected Sentiment</h6>
+
+                {% if call.sentiment == 'Positive' %}
+                <i class="fa-solid fa-face-smile fa-5x text-success mb-3"></i>
+                <h2 class="status-positive fw-bold mb-2">Positive</h2>
+                {% elif call.sentiment == 'Negative' %}
+                <i class="fa-solid fa-face-frown fa-5x text-danger mb-3"></i>
+                <h2 class="status-negative fw-bold mb-2">Negative</h2>
+                {% else %}
+                <i class="fa-solid fa-face-meh fa-5x text-warning mb-3"></i>
+                <h2 class="status-neutral fw-bold mb-2">Neutral</h2>
+                {% endif %}
+
+                <div class="display-6 fw-bold mt-4 text-white">{{ "%.2f"|format(call.confidence) }}%</div>
+                <div class="text-muted small">Confidence Score</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header pb-0 pt-4 px-4 border-0 bg-transparent">
+                <h5 class="fw-bold text-white">Call Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Call ID</div>
+                    <div class="col-sm-8 fw-semibold text-white">#{{ call.id }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Customer Name</div>
+                    <div class="col-sm-8 fw-semibold text-white">{{ call.customer_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Timestamp</div>
+                    <div class="col-sm-8 fw-semibold text-white">{{ call.date.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Audio File</div>
+                    <div class="col-sm-8 fw-semibold text-white">{{ call.audio_filename }}</div>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <h6 class="fw-bold mb-3 text-white">AI Extracted Insights</h6>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Subject Keywords</div>
+                    <div class="col-sm-8">
+                        {% if call.keywords %}
+                        {% for kw in call.keywords.split(',') %}
+                        <span class="badge bg-secondary me-1">{{ kw.strip() }}</span>
+                        {% endfor %}
+                        {% else %}
+                        <span class="text-muted">No keywords detected</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 text-muted">Call Summary</div>
+                    <div class="col-sm-8 fst-italic text-white">"{{ call.summary }}"</div>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <div class="customer-response-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0 text-white">
+                            <i class="fa-solid fa-reply me-2 text-info"></i>Customer Response
+                        </h6>
+                        {% if call.sentiment == 'Positive' %}
+                        <span
+                            class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Positive
+                            Indicator</span>
+                        {% elif call.sentiment == 'Negative' %}
+                        <span
+                            class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Negative
+                            Indicator</span>
+                        {% else %}
+                        <span
+                            class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">Neutral
+                            Indicator</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="response-box p-3 rounded-4 mb-4"
+                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                        <textarea id="customerResponseText" class="form-control bg-transparent text-white border-0 p-0"
+                            rows="4"
+                            style="resize: none; outline: none; box-shadow: none;">{{ call.customer_response }}</textarea>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button onclick="copyResponse()" class="btn btn-outline-light btn-sm px-3">
+                            <i class="fa-solid fa-copy me-2"></i>Copy Message
+                        </button>
+                        <button onclick="sendEmail()" class="btn btn-outline-info btn-sm px-3">
+                            <i class="fa-solid fa-envelope me-2"></i>Send via Email
+                        </button>
+                        <button onclick="saveResponse()" class="btn btn-primary btn-sm px-4">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save Record
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <a href="{{ url_for('transcript', call_id=call.id) }}"
+                        class="btn btn-link text-info text-decoration-none w-100 py-2"><i
+                            class="fa-solid fa-file-lines me-2"></i> View Full Transcript</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyResponse() {
+        const text = document.getElementById('customerResponseText').value;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Response copied to clipboard!');
+        });
+    }
+
+    function sendEmail() {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        btn.disabled = true;
+
+        fetch("{{ url_for('send_email', call_id=call.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+    }
+
+    function saveResponse() {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        const text = document.getElementById('customerResponseText').value;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        btn.disabled = true;
+
+        const formData = new URLSearchParams();
+        formData.append('customer_response', text);
+
+        fetch("{{ url_for('save_response', call_id=call.id) }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+    }
+</script>
+{% endblock %}

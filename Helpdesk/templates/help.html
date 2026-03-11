@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-5 border-0 shadow-lg"
+                style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border-radius: 32px;">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold text-white mb-3"
+                        style="background: linear-gradient(to right, #ffffff, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Help & Support</h1>
+                    <div class="mx-auto"
+                        style="width: 80px; height: 4px; background: linear-gradient(to right, #3b82f6, #6366f1); border-radius: 2px;">
+                    </div>
+                </div>
+
+                <div class="text-light" style="font-size: 1.1rem; line-height: 1.7;">
+                    <p class="mb-4">
+                        Welcome to the <strong>AI Helpdesk Call Sentiment Analyzer</strong>. This platform helps analyze
+                        customer call recordings and detect their sentiment automatically.
+                    </p>
+
+                    <h4 class="text-white fw-bold mb-3 mt-4">How to use the system:</h4>
+
+                    <ol class="ps-3">
+                        <li class="mb-3">
+                            <strong class="text-primary">Login</strong> – Sign in using your registered email and
+                            password.
+                        </li>
+                        <li class="mb-3">
+                            <strong class="text-primary">Upload Call Recording</strong> – Go to the Upload section and
+                            upload a call audio file (.mp3 or .wav).
+                        </li>
+                        <li class="mb-3">
+                            <strong class="text-primary">Automatic Analysis</strong> – The system converts the audio
+                            into text and analyzes the sentiment using AI.
+                        </li>
+                        <li class="mb-3">
+                            <strong class="text-primary">View Results</strong> – Check the detected sentiment (Positive,
+                            Neutral, or Negative) along with the call transcript.
+                        </li>
+                        <li class="mb-3">
+                            <strong class="text-primary">Dashboard & Analytics</strong> – Use the dashboard to view
+                            statistics, trends, and overall customer satisfaction.
+                        </li>
+                        <li class="mb-3">
+                            <strong class="text-primary">Call History</strong> – Access previously analyzed calls and
+                            review their results anytime.
+                        </li>
+                    </ol>
+
+                    <div class="alert alert-info bg-info bg-opacity-10 border-info border-opacity-25 text-light mt-5"
+                        style="border-radius: 16px;">
+                        <i class="fa-solid fa-circle-info me-2 text-info"></i>
+                        If you experience any issues while using the system, please contact the system administrator.
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-top border-secondary border-opacity-25 text-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-4 py-2">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
