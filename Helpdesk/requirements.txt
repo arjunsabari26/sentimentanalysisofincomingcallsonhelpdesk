@@ -1,8 +1,0 @@
-Flask
-Flask-SQLAlchemy
-Flask-Login
-Werkzeug
-SpeechRecognition
-textblob
-pydub
-Flask-Mail
