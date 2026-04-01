@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold m-0 text-white">Call Transcript #{{ call.id }}</h2>
+    <a href="{{ url_for('result', call_id=call.id) }}" class="btn btn-outline-secondary">Back to Result</a>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center p-3">
+        <div>
+            <span class="fw-bold text-white">{{ call.customer_name }}</span>
+            <span class="text-muted ms-2">{{ call.date.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <div>
+            {% if call.sentiment == 'Positive' %}
+            <span class="badge badge-positive px-3 py-2 text-white">Positive ({{ "%.1f"|format(call.confidence)
+                }}%)</span>
+            {% elif call.sentiment == 'Negative' %}
+            <span class="badge badge-negative px-3 py-2 text-white">Negative ({{ "%.1f"|format(call.confidence)
+                }}%)</span>
+            {% else %}
+            <span class="badge badge-neutral px-3 py-2">Neutral ({{ "%.1f"|format(call.confidence) }}%)</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body p-4 p-md-5" style="font-size: 1.1rem; line-height: 1.8;">
+        <!-- In a real world app, we'd process the transcript to highlight positive/negative keywords -->
+        <div id="transcript-content" class="text-white mb-5">
+            {{ call.transcript }}
+        </div>
+
+        <div class="mt-5 pt-4 border-top border-secondary">
+            <h6 class="fw-bold text-white mb-3"><i class="fa-solid fa-reply me-2 text-info"></i>Auto-Generated Customer
+                Response</h6>
+            <div class="p-4 rounded-4"
+                style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent-blue);">
+                <p id="response-text" class="mb-0 text-white-50 fst-italic">"{{ call.customer_response }}"</p>
+                <div class="mt-3 d-flex gap-3">
+                    <button onclick="copyResponseText()"
+                        class="btn btn-sm btn-outline-secondary border-secondary border-opacity-25">
+                        <i class="fa-solid fa-copy me-1"></i> Copy
+                    </button>
+                    <a href="{{ url_for('result', call_id=call.id) }}"
+                        class="btn btn-sm btn-outline-info border-info border-opacity-25">
+                        <i class="fa-solid fa-gear me-1"></i> Edit Actions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyResponseText() {
+        const text = document.getElementById('response-text').innerText.replace(/^"|"$/g, '');
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Response copied to clipboard!');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        let content = document.getElementById('transcript-content').innerHTML;
+        const negativeWords = ['terrible', 'bad', 'angry', 'upset', 'worst', 'issue', 'problem', 'unacceptable', 'fail', 'broken'];
+        const positiveWords = ['great', 'excellent', 'amazing', 'happy', 'good', 'thanks', 'thank you', 'love', 'perfect', 'awesome'];
+
+        negativeWords.forEach(word => {
+            const regex = new RegExp('\\b(' + word + ')\\b', 'gi');
+            content = content.replace(regex, '<span class="text-danger fw-bold bg-danger bg-opacity-10 px-1 rounded">$1</span>');
+        });
+
+        positiveWords.forEach(word => {
+            const regex = new RegExp('\\b(' + word + ')\\b', 'gi');
+            content = content.replace(regex, '<span class="text-success fw-bold bg-success bg-opacity-10 px-1 rounded">$1</span>');
+        });
+
+        document.getElementById('transcript-content').innerHTML = content;
+    });
+</script>
+{% endblock %}
